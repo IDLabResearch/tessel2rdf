@@ -1,0 +1,11 @@
+RML-Mapper.jar
+.idea
+climate.json
+log
+node_modules
+*.log
+triples.ttl
+repositories
+custom-tessel.rml.ttl
+rfid.json
+ambient.json
