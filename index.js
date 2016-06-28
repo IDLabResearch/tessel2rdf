@@ -85,7 +85,7 @@ function fetchMapping(module, cb) {
   results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
   results.on('data', function (d) {
     console.log(d);
-    write.addTriple(d.subject, d.predicate, d.object);
+    writer.addTriple(d.subject, d.predicate, d.object);
   });
 
   results.on('end', function () {
