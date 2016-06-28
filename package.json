@@ -9,7 +9,8 @@
   },
   "author": "Pieter Heyvaert",
   "dependencies": {
-    "ldf-client": "^1.3.2",
+    "ldf-client": "^1.4.0",
+    "n3": "^0.4.5",
     "split": "^1.0.0"
   },
   "devDependencies": {},

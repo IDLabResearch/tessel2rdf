@@ -4,6 +4,7 @@
 
 var fs = require('fs');
 var ldf = require('ldf-client');
+var N3 = require('n3');
 var config = require('./config.json');
 var fragmentsClient = new ldf.FragmentsClient(config.server);
 var exec = require('child_process').exec;
@@ -48,7 +49,7 @@ function generateRDF(module) {
 }
 
 function fetchMapping(module, cb) {
-  var triples = '';
+  var writer = N3.Writer();
 
   var query = 'PREFIX ex: <http://www.example.com/>' +
     'PREFIX rml: <http://semweb.mmlab.be/ns/rml#>' +
@@ -79,13 +80,16 @@ function fetchMapping(module, cb) {
     '?sm rr:class ?class .' +
     '}';
 
+  //var query = 'select * where {?s ?p ?o.}';
+
   results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
   results.on('data', function (d) {
-    triples += d + '\n';
+    console.log(d);
+    write.addTriple(d.subject, d.predicate, d.object);
   });
 
   results.on('end', function () {
-    cb(triples);
+    writer.end(function (error, result) {cb(result);});
   });
 }
 
