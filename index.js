@@ -8,10 +8,11 @@ var N3 = require('n3');
 var config = require('./config.json');
 var fragmentsClient = new ldf.FragmentsClient(config.server);
 var exec = require('child_process').exec;
+var dir = __dirname;
 
 function mapJSON(data) {
 
-  fs.writeFile(data.module + '.json', data, function (err) {
+  fs.writeFile(dir + '/' + data.module + '.json', data, function (err) {
     if (err) {
       return console.log(err);
     }
@@ -21,7 +22,6 @@ function mapJSON(data) {
 }
 
 function generateRDF(module) {
-  var dir = __dirname; //'/home/pieter/Developer/demo-thermometer-continuous-datasource/mapper/';
   var outputFile = dir + '/triples.ttl';
   var format = 'turtle';
   var originalMappingFile = dir + '/tessel.rml.ttl';
