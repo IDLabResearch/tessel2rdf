@@ -26,8 +26,6 @@ function mapJSON(data) {
     if (err) {
       return console.log(err);
     }
-
-    generateRDF(data.module);
   });
 }
 
