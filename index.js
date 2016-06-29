@@ -10,6 +10,8 @@ var fragmentsClient = new ldf.FragmentsClient(config.server);
 var exec = require('child_process').exec;
 var dir = __dirname;
 
+ldf.Logger.setLevel('error');
+
 function mapJSON(data) {
 
   fs.writeFile(dir + '/' + data.module + '.json', JSON.stringify(data), function (err) {
