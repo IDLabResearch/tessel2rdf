@@ -21,6 +21,14 @@ function mapJSON(data) {
 
     generateRDF(data.module);
   });
+
+  fs.appendFile(dir + '/' + data.module + '.json.log', JSON.stringify(data), function (err) {
+    if (err) {
+      return console.log(err);
+    }
+
+    generateRDF(data.module);
+  });
 }
 
 function generateRDF(module) {
