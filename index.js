@@ -12,7 +12,7 @@ var dir = __dirname;
 
 function mapJSON(data) {
 
-  fs.writeFile(dir + '/' + data.module + '.json', data, function (err) {
+  fs.writeFile(dir + '/' + data.module + '.json', JSON.stringify(data), function (err) {
     if (err) {
       return console.log(err);
     }
