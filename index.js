@@ -63,14 +63,20 @@ function fetchMapping(module, cb) {
     '];' +
 
     'rr:subjectMap [' +
-    '  rr:template ?template;' +
+    'rr:template ?template;' +
     'rr:class ?class' +
-    ']' +
+    '];' +
+
+    'rr:predicateObjectMap ?pom .' +
+    '?pom rr:predicate ?predicate .' +
+    '?pom rr:objectMap ?om .' +
+    '?om rml:reference ?reference .' +
     '}' +
     'WHERE {' +
     ' ?tm ex:useWithTesselModule \'' + module + '\' .' +
     '  ?tm rml:logicalSource ?logicalSource .' +
     ' ?tm rr:subjectMap ?sm .' +
+    ' ?tm rr:predicateObjectMap ?pom .' +
 
     '?logicalSource rml:source ?source .' +
     '?logicalSource rml:referenceFormulation ?refForm .' +
@@ -78,6 +84,11 @@ function fetchMapping(module, cb) {
 
     '?sm rr:template ?template .' +
     '?sm rr:class ?class .' +
+
+    '?pom rr:predicate ?predicate .' +
+    '?pom rr:objectMap ?om .' +
+
+    '?om rml:reference ?reference .' +
     '}';
 
   //var query = 'select * where {?s ?p ?o.}';
