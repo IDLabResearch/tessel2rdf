@@ -36,9 +36,9 @@ function generateRDF(module) {
       exec('cd ' + dir + '; rm -f ' + mappingFile + '; sed -e \'s/\\*\\*\\*INPUT\\*\\*\\*/' + dir.replace(/\//g, '\\/') + '\\/' + module + '\\.json/g\' ' + originalMappingFile + ' > ' + mappingFile, function (error, stdout, stderr) {
 
         exec('cd ' + rmwd + '; java -jar RML-Mapper.jar -m ' + mappingFile + ' -f ' + format + ' -o ' + outputFile + ' > ' + logFile + '; sed -i \'/^s*$/d\' ' + outputFile, function (error, stdout, stderr) {
-          //var readStream = fs.createReadStream(outputFile);
+          var readStream = fs.createReadStream(outputFile);
 
-          //readStream.pipe(process.stdout);
+          readStream.pipe(process.stdout);
           console.log('done');
         });
       });
@@ -95,7 +95,7 @@ function fetchMapping(module, cb) {
 
   results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
   results.on('data', function (d) {
-    console.log(d);
+    //console.log(d);
     writer.addTriple(d.subject, d.predicate, d.object);
   });
 
