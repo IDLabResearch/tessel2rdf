@@ -40,6 +40,7 @@ function generateRDF(module) {
   //console.log('sed -e \'s/\\*\\*\\*INPUT\\*\\*\\*/' + dir.replace(/\//g, '\\/') + '\\/' + module + '\\.json/g\' ' + originalMappingFile );
 
   function cb(triples) {
+
     fs.writeFile(originalMappingFile, triples, function () {
       exec('cd ' + dir + '; rm -f ' + mappingFile + '; sed -e \'s/\\*\\*\\*INPUT\\*\\*\\*/' + dir.replace(/\//g, '\\/') + '\\/' + module + '\\.json/g\' ' + originalMappingFile + ' > ' + mappingFile, function (error, stdout, stderr) {
 
@@ -72,7 +73,7 @@ function fetchTM(module, cb) {
 
   var results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
   results.on('data', function (d) {
-    tm = d[0]['?tm'];
+    tm = d['?tm'];
   });
 
   results.on('end', function () {
@@ -81,35 +82,13 @@ function fetchTM(module, cb) {
 }
 
 function fetchMapping(tm, cb) {
-  var writer = N3.Writer();
+  var writer = N3.Writer({ prefixes: { map: 'http://example.com/pieter/' } });
 
   var query = 'PREFIX ex: <http://www.example.com/>' +
     'PREFIX rml: <http://semweb.mmlab.be/ns/rml#>' +
     'PREFIX rr: <http://www.w3.org/ns/r2rml#>' +
 
     'CONSTRUCT {' +
-    '<' + tm + '> rml:logicalSource [' +
-    '  rml:source ?source;' +
-    'rml:referenceFormulation ?refForm;' +
-    'rml:iterator ?iterator' +
-    '];' +
-
-    'rr:subjectMap [' +
-    'rr:template ?template;' +
-    'rr:class ?class' +
-    '];' +
-
-    'rr:predicateObjectMap ?pom .' +
-    '?pom rr:predicate ?predicate .' +
-    '?pom rr:objectMap ?om .' +
-    '?om rml:reference ?reference .' +
-    '?om rr:parentTriplesMap ?ptm .' +
-    '?om rr:joinCondition ?jc .' +
-
-    '?jc rr:child ?child .' +
-    '?jc rr:parent ?parent .' +
-    '}' +
-    'WHERE {' +
     '<' + tm + '> rml:logicalSource ?logicalSource .' +
     '<' + tm + '> rr:subjectMap ?sm .' +
     '<' + tm + '> rr:predicateObjectMap ?pom .' +
@@ -130,9 +109,29 @@ function fetchMapping(tm, cb) {
 
     '?jc rr:child ?child .' +
     '?jc rr:parent ?parent .' +
-    '}';
+    '}' +
+    'WHERE {' +
+    '<' + tm + '> rml:logicalSource ?logicalSource .' +
+    '<' + tm + '> rr:subjectMap ?sm .' +
+    '<' + tm + '> rr:predicateObjectMap ?pom .' +
 
-  //var query = 'select * where {?s ?p ?o.}';
+    '?logicalSource rml:source ?source .' +
+    '?logicalSource rml:referenceFormulation ?refForm .' +
+    '?logicalSource rml:iterator ?iterator .' +
+
+    '?sm rr:template ?template .' +
+    'OPTIONAL { ?sm rr:class ?class . }' +
+
+    '?pom rr:predicate ?predicate .' +
+    '?pom rr:objectMap ?om .' +
+
+    'OPTIONAL { ?om rml:reference ?reference . }' +
+    'OPTIONAL { ?om rr:parentTriplesMap ?ptm . }' +
+    'OPTIONAL { ?om rr:joinCondition ?jc . }' +
+
+    'OPTIONAL { ?jc rr:child ?child . }' +
+    'OPTIONAL { ?jc rr:parent ?parent . }' +
+    '}';
 
   var results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
 
@@ -144,14 +143,17 @@ function fetchMapping(tm, cb) {
 
     if (d.predicate == "http://www.w3.org/ns/r2rml#parentTriplesMap") {
       ptm = d.object;
+      ptm = ptm.replace('map:', 'http://www.example.com/pieter/');
     }
   });
 
   results.on('end', function () {
     if (ptm) {
       fetchMapping(ptm, function(triples){
-        writer.end(function (error, result) {cb(triples + '\n' + result);});
+        writer.end(function (error, result) {console.log(triples); cb(triples + '\n' + result);});
       })
+    } else {
+      writer.end(function (error, result) {cb(result);});
     }
   });
 }
