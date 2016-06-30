@@ -150,7 +150,7 @@ function fetchMapping(tm, cb) {
   results.on('end', function () {
     if (ptm) {
       fetchMapping(ptm, function(triples){
-        writer.end(function (error, result) {console.log(triples); cb(triples + '\n' + result);});
+        writer.end(function (error, result) {cb(triples + '\n' + result);});
       })
     } else {
       writer.end(function (error, result) {cb(result);});
