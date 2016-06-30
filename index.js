@@ -53,10 +53,34 @@ function generateRDF(module) {
     });
   }
 
-  fetchMapping(module, cb);
+  fetchTM(module, function(tm) {
+    fetchMapping(tm, cb);
+  });
 }
 
-function fetchMapping(module, cb) {
+function fetchTM(module, cb) {
+  var query = 'PREFIX ex: <http://www.example.com/>' +
+
+    'SELECT *' +
+    'WHERE {' +
+    '?tm ex:useWithTesselModule \'' + module + '\' .' +
+    '}';
+
+  //var query = 'select * where {?s ?p ?o.}';
+
+  var tm;
+
+  var results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
+  results.on('data', function (d) {
+    tm = d[0]['?tm'];
+  });
+
+  results.on('end', function () {
+    cb(tm);
+  });
+}
+
+function fetchMapping(tm, cb) {
   var writer = N3.Writer();
 
   var query = 'PREFIX ex: <http://www.example.com/>' +
@@ -64,7 +88,7 @@ function fetchMapping(module, cb) {
     'PREFIX rr: <http://www.w3.org/ns/r2rml#>' +
 
     'CONSTRUCT {' +
-    '?tm rml:logicalSource [' +
+    '<' + tm + '> rml:logicalSource [' +
     '  rml:source ?source;' +
     'rml:referenceFormulation ?refForm;' +
     'rml:iterator ?iterator' +
@@ -79,12 +103,16 @@ function fetchMapping(module, cb) {
     '?pom rr:predicate ?predicate .' +
     '?pom rr:objectMap ?om .' +
     '?om rml:reference ?reference .' +
+    '?om rr:parentTriplesMap ?ptm .' +
+    '?om rr:joinCondition ?jc .' +
+
+    '?jc rr:child ?child .' +
+    '?jc rr:parent ?parent .' +
     '}' +
     'WHERE {' +
-    ' ?tm ex:useWithTesselModule \'' + module + '\' .' +
-    '  ?tm rml:logicalSource ?logicalSource .' +
-    ' ?tm rr:subjectMap ?sm .' +
-    ' ?tm rr:predicateObjectMap ?pom .' +
+    '<' + tm + '> rml:logicalSource ?logicalSource .' +
+    '<' + tm + '> rr:subjectMap ?sm .' +
+    '<' + tm + '> rr:predicateObjectMap ?pom .' +
 
     '?logicalSource rml:source ?source .' +
     '?logicalSource rml:referenceFormulation ?refForm .' +
@@ -97,18 +125,34 @@ function fetchMapping(module, cb) {
     '?pom rr:objectMap ?om .' +
 
     '?om rml:reference ?reference .' +
+    '?om rr:parentTriplesMap ?ptm .' +
+    '?om rr:joinCondition ?jc .' +
+
+    '?jc rr:child ?child .' +
+    '?jc rr:parent ?parent .' +
     '}';
 
   //var query = 'select * where {?s ?p ?o.}';
 
-  results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
+  var results = new ldf.SparqlIterator(query, {fragmentsClient: fragmentsClient});
+
+  var ptm;
+
   results.on('data', function (d) {
     //console.log(d);
     writer.addTriple(d.subject, d.predicate, d.object);
+
+    if (d.predicate == "http://www.w3.org/ns/r2rml#parentTriplesMap") {
+      ptm = d.object;
+    }
   });
 
   results.on('end', function () {
-    writer.end(function (error, result) {cb(result);});
+    if (ptm) {
+      fetchMapping(ptm, function(triples){
+        writer.end(function (error, result) {cb(triples + '\n' + result);});
+      })
+    }
   });
 }
 
