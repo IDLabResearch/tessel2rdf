@@ -48,7 +48,8 @@ function generateRDF(module) {
           var readStream = fs.createReadStream(outputFile);
 
           readStream.pipe(process.stdout);
-          console.log('done');
+          console.log('\n');
+          //console.log('done');
         });
       });
     });
