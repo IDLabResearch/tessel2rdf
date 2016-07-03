@@ -22,7 +22,7 @@ function mapJSON(data) {
     generateRDF(data.module);
   });
 
-  fs.appendFile(dir + '/' + data.module + '.json.log', JSON.stringify(data) + '\n', function (err) {
+  fs.appendFile(dir + '/output.json.log', JSON.stringify(data) + '\n', function (err) {
     if (err) {
       return console.log(err);
     }
